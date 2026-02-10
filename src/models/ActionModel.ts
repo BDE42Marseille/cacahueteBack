@@ -14,7 +14,8 @@ const ActionSchema = new Schema<IAction>({
 		type : String,
 		required : true,
 	},
-}, { timestamps : true });
+},
+	{ timestamps : true });
 
 const ActionModel =
 	mongoose.models.Action ||
