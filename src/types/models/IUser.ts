@@ -14,4 +14,5 @@ export interface IUser extends Document {
 	numberTryDemasked : number;
 	tig: boolean;
 	tigTime : Date;
+	admin : boolean;
 };

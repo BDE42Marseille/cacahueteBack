@@ -45,6 +45,10 @@ const UserSchema = new Schema<IUser>({
 		default : false,
 	},
 	tigTime : Date,
+	admin : {
+		type : Boolean,
+		default : false,
+	},
 }, { timestamps : true });
 
 const UserModel =
