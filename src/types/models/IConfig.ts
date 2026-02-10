@@ -1,11 +1,5 @@
 import { Types, Document } from 'mongoose';
-
-export enum stateEvent {
-	register,
-	start,
-	freeze,
-	result
-}
+import type { stateEvent } from '../enum/enumStateEvent.js';
 
 export interface IConfig extends Document {
 	stateEvent : stateEvent;

@@ -1,13 +1,7 @@
 import { Types, Document } from 'mongoose';
 import type { IAction } from './IAction.js';
 import type { IUser } from './IUser.js';
-
-export enum stateAction {
-	pending,
-	completed,
-	abandoned,
-	failed
-}
+import type { stateAction } from '../enum/enumStateAction.js';
 
 export interface IAssignedAction extends Document {
 	action : string | IAction;

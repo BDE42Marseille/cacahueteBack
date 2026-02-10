@@ -1,9 +1,5 @@
 import { Types, Document } from 'mongoose';
-
-export enum difficulty {
-	easy,
-	hard
-}
+import type { difficulty } from '../enum/enumDifficulty.js';
 
 export interface IAction extends Document {
 	type: difficulty;
