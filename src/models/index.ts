@@ -1,2 +1,5 @@
 export {default as UserModel} from './UserModel.js'
 export {default as TokenModel} from './TokenModel.js'
+export {default as ActionModel} from './ActionModel.js'
+export {default as ConfigModel} from './ConfigModel.js'
+export {default as AssignedActionModel} from './AssignedAction.js'
