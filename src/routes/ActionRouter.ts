@@ -5,7 +5,7 @@ import { ActionController } from '../controllers/index.js';
 const ActionRouter = express.Router();
 
 ActionRouter.post('/', bearerTokenHandler, adminHandler, ActionController.create);
-ActionRouter.get('/', bearerTokenHandler, ActionController.getAll);
+ActionRouter.get('/', bearerTokenHandler, adminHandler,ActionController.getAll);
 ActionRouter.delete('/:id', bearerTokenHandler, adminHandler, ActionController.delete);
 ActionRouter.put('/:id', bearerTokenHandler, adminHandler, ActionController.update);
 
