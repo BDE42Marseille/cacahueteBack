@@ -1,8 +1,13 @@
 import mongoose from 'mongoose';
+import ConfigModel from '../models/ConfigModel.js';
 
 mongoose.connection.on('connected', async () => {
     console.log("[Database] Successfully connected !");
-    
+    const config = await ConfigModel.findOne();
+    if (!config) {
+        console.log("[Database] No config found, creating default config...");
+        await ConfigModel.create({});
+    }
 });
 
 mongoose.connection.on('error', () =>

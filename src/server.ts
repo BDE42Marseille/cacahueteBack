@@ -48,9 +48,12 @@ if (!process.env.PATH_KEY_HTTPS || !process.env.PATH_CERF_HTTPS) {
 		});	
 	}
 
-	if (!process.env.MONGODB_USERNAME || !process.env.MONGODB_PASSWORD || !process.env.MONGODB_URL) {
+	if (!process.env.JWT_SECRET)
+		throw new Error('Missing JWT secret environment variable');
+	if (!process.env.SALT_ROUNDS)
+		throw new Error('Missing SALT_ROUNDS environment variable');
+	if (!process.env.MONGODB_USERNAME || !process.env.MONGODB_PASSWORD || !process.env.MONGODB_URL)
         throw new Error('Missing required MongoDB environment variables');
-    }
 
     await connectDb(process.env.MONGODB_USERNAME, process.env.MONGODB_PASSWORD, process.env.MONGODB_URL);
 
