@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 mongoose.connection.on('connected', async () => {
     console.log("[Database] Successfully connected !");
+    
 });
 
 mongoose.connection.on('error', () =>
