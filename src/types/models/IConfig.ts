@@ -6,5 +6,7 @@ export interface IConfig extends Document {
 	maxActionPerDay : number;
 	maxActionPerHours : number;
 	maxTryDemaskPerDay : number;
+	easyActionPoint : number;
+	hardActionPoint : number;
 	tigTime : number;
 };

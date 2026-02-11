@@ -9,12 +9,12 @@ export const adminHandler = async(req: Request, res: Response, next: Function) =
             return next();
 
         return res.status(401).json({
-            success : false,
+            succes : false,
             error : "Unauthorized access",
         });
     } catch (err) {
         return res.status(500).json({
-            success : false,
+            succes : false,
             error : "Internal server error",
         });
     }
@@ -32,14 +32,8 @@ export const bearerTokenHandler = async(req: Request, res: Response, next: Funct
                 succes : false,
                 error : "Missing token",
         });
-
-        const jwtSecret = process.env.JWT_SECRET;
-        if (!jwtSecret) {
-            return res.status(500).json({
-                success: false,
-                error: "JWT secret is not defined",
-            });
-        }
+        const jwtSecret = process.env.JWT_SECRET as string;
+        
         const decoded = jwt.verify(token, jwtSecret) as jwt.JwtPayload;
 
         const user = await UserModel
@@ -52,13 +46,18 @@ export const bearerTokenHandler = async(req: Request, res: Response, next: Funct
     } catch (err) {
         if ((err as Error).message == "jwt expired")
             return res.status(401).json({
-                success : false,
+                succes : false,
                 error : "Token expired",
             });
-        console.log(err)
-        res.status(401).json({
-            success : false,
-            error : "Invalid token",
+        if ((err as Error).message == "invalid signature")
+            res.status(401).json({
+                succes : false,
+                error : "Invalid token",
+            });
+        console.error(`Bearer token handler : \n${err}\n`);
+        return res.status(500).json({
+            succes : false,
+            error : "Internal server error",
         });
     }
 };

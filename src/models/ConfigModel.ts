@@ -18,6 +18,14 @@ const ConfigSchema = new Schema<IConfig>({
 		type : Number,
 		default : 3,
 	},
+	easyActionPoint : {
+		type : Number,
+		default : 1,
+	},
+	hardActionPoint : {
+		type : Number,
+		default : 2,
+	},
 	tigTime : {
 		type : Number,
 		default : 1,

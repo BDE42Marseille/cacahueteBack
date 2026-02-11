@@ -6,13 +6,13 @@ export default {
 		try {
 			const actions = await ActionModel.find().lean();
 			return res.status(200).json({
-				success: true,
+				succes: true,
 				data: actions,
 			});
 		} catch (err) {
 			console.error(`getAll Action : \n${err}\n`);
 			return res.status(500).json({
-				success: false,
+				succes: false,
 				error: "Internal server error",
 			});
 		}
@@ -22,20 +22,20 @@ export default {
 			const { type, name, description } = req.body;
 			if (!type || !name || !description) {
 				return res.status(400).json({
-					success: false,
+					succes: false,
 					error: "Missing type, name or description",
 				});
 			}
 			await ActionModel.create({ type, name, description });
 			const actions = await ActionModel.find().lean();
 			return res.status(201).json({
-				success: true,
+				succes: true,
 				data: actions,
 			});
 		} catch (err) {
 			console.error(`create Action : \n${err}\n`);
 			return res.status(500).json({
-				success: false,
+				succes: false,
 				error: "Internal server error",
 			});
 		}
@@ -45,20 +45,20 @@ export default {
 			const { id } = req.params;
 			if (!id) {
 				return res.status(400).json({
-					success: false,
+					succes: false,
 					error: "Missing id",
 				});
 			}
 			await ActionModel.findByIdAndDelete(id);
 			const actions = await ActionModel.find().lean();
 			return res.status(200).json({
-				success: true,
+				succes: true,
 				data: actions,
 			});
 		} catch (err) {
 			console.error(`delete Action : \n${err}\n`);
 			return res.status(500).json({
-				success: false,
+				succes: false,
 				error: "Internal server error",
 			});
 		}
@@ -69,20 +69,20 @@ export default {
 			const { type, name, description } = req.body;
 			if (!id || !type || !name || !description) {
 				return res.status(400).json({
-					success: false,
+					succes: false,
 					error: "Missing id, type, name or description",
 				});
 			}
 			await ActionModel.findByIdAndUpdate(id, { type, name, description });
 			const actions = await ActionModel.find().lean();
 			return res.status(200).json({
-				success: true,
+				succes: true,
 				data: actions,
 			});
 		} catch (err) {
 			console.error(`update Action : \n${err}\n`);
 			return res.status(500).json({
-				success: false,
+				succes: false,
 				error: "Internal server error",
 			});
 		}

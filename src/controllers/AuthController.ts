@@ -9,34 +9,34 @@ export default {
 			const { login, password } = req.body;
 			if (!login || !password) {
 				return res.status(400).json({
-					success: false,
+					succes: false,
 					error: "Missing login or password",
 				});
 			}
 			const user : { password: string, _id: string } | null = await UserModel.findOne({ login }).select({ password: 1, _id: 1 }).lean();
 			if (!user) {
 				return res.status(401).json({
-					success: false,
+					succes: false,
 					error: "Inknown login",
 				});
 			}
 			const isPasswordValid : boolean = await bcrypt.compare(password, user.password);
 			if (!isPasswordValid) {
 				return res.status(401).json({
-					success: false,
+					succes: false,
 					error: "Wrong password",
 				});
 			} else {
 				const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET as string, { expiresIn: '7d' });
 				return res.status(200).json({
-					success: true,
+					succes: true,
 					token
 				});
 			}
 		} catch (error) {
 			console.error(`Login : \n${error}\n`);
 			return res.status(500).json({
-				success: false,
+				succes: false,
 				error: "Internal server error",
 			});
 		}
@@ -46,14 +46,14 @@ export default {
 			const { login, password } = req.body;
 			if (!login || !password) {
 				return res.status(400).json({
-					success: false,
+					succes: false,
 					error: "Missing login or password",
 				});
 			}
 			const existingUser = await UserModel.findOne({ login }).lean();
 			if (existingUser) {
 				return res.status(409).json({
-					success: false,
+					succes: false,
 					error: "Login already exists",
 				});
 			}
@@ -61,13 +61,13 @@ export default {
 			const newUser = new UserModel({ login, password: hashedPassword });
 			await newUser.save();
 			return res.status(201).json({
-				success: true,
-				message: "User registered successfully",
+				succes: true,
+				message: "User registered succesfully",
 			});
 		} catch (error) {
 			console.error(`Register : \n${error}\n`);
 			return res.status(500).json({
-				success: false,
+				succes: false,
 				error: "Internal server error",
 			});
 		}

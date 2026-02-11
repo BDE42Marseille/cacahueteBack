@@ -10,41 +10,44 @@ const UserSchema = new Schema<IUser>({
 		type : String,
 		required : true,
 	},
-	goodPoint : {
-		type : Number,
-		default : 0,
+	score : {
+		goodPoint : {
+			type : Number,
+			default : 0,
+		},
+		revealPoint : {
+			type : Number,
+			default : 0,
+		},
+		revealedPoint : {
+			type : Number,
+			default : 0,
+		},
 	},
-	revealPoint : {
-		type : Number,
-		default : 0,
-	},
-	revealedPoint : {
-		type : Number,
-		default : 0,
-	},
-	totalScore : {
-		type : Number,
-		default : 0,
-	},
-	numberActions : {
-		type : Number,
-		default : 0,
+	daily : {
+		numberActions : {
+			type : Number,
+			default : 0,
+		},
+		numberTryDemask : {
+			type : Number,
+			default : 0,
+		},
 	},
 	isActive : {
 		type : Boolean,
 		default : false,
 	},
-	lastTimeActions : Date,
-	lastUnmaskingAttempt : Date,
-	numberTryDemasked : {
-		type : Number,
-		default : 0,
+	tig : {
+		active : {
+			type : Boolean,
+			default : false,
+		},
+		time : {
+			type : Date,
+			default : null,
+		},
 	},
-	tig: {
-		type : Boolean,
-		default : false,
-	},
-	tigTime : Date,
 	admin : {
 		type : Boolean,
 		default : false,
