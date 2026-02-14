@@ -6,6 +6,7 @@ import { ActionModel, AssignedActionModel, ConfigModel, UserModel } from "../mod
 export default {
 	async requestAssignation(req : Request, res : Response) {
 		try {
+			const difficulty = req.body.difficulty;
 			const config = await ConfigModel.findOne().lean();
 			if (res.locals.user.isActive) {
 				return res.status(401).json({
@@ -34,7 +35,7 @@ export default {
 					});
 				}
 			}
-			const allActions = await ActionModel.find().lean();
+			const allActions = await ActionModel.find({ difficulty: difficulty }).lean();
 			const randomAction = allActions[Math.floor(Math.random() * allActions.length)];
 			const users = await UserModel.find({ _id : { $ne : res.locals.user._id }, admin : false }).lean();
 			const randomUser = users[Math.floor(Math.random() * users.length)];
