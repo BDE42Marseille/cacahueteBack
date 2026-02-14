@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import ConfigModel from "../models/ConfigModel.js";
+import { ConfigModel } from "../models/index.js";
 
 
 export default {
