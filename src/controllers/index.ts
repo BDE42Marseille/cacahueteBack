@@ -1,5 +1,5 @@
 export {default as AuthController} from './AuthController.js'
 // export {default as UserController} from './UserController.js'
 export {default as ActionController} from './ActionController.js'
-// export {default as ConfigController} from './ConfigController.js'
+export {default as ConfigController} from './ConfigController.js'
 export {default as AssignationActionController} from './AssignationActionController.js'
