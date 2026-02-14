@@ -36,7 +36,7 @@ export default {
 			}
 			const allActions = await ActionModel.find().lean();
 			const randomAction = allActions[Math.floor(Math.random() * allActions.length)];
-			const users = await UserModel.find({ _id : { $ne : res.locals.user._id } }).lean();
+			const users = await UserModel.find({ _id : { $ne : res.locals.user._id }, admin : false }).lean();
 			const randomUser = users[Math.floor(Math.random() * users.length)];
 			const assignedAction = await AssignedActionModel.create({
 				action : randomAction._id,
