@@ -51,17 +51,10 @@ export default {
 				},
 			});
 			await assignedAction.save();
+			const populatedAssignedAction = await AssignedActionModel.findById(assignedAction._id).populate('action target', 'login').lean();
 			return res.status(200).json({
 				succes : true,
-				action : {
-					_id : assignedAction._id,
-					name : randomAction.name,
-					description : randomAction.description,
-					target : {
-						_id : randomUser._id,
-						login : randomUser.login,
-					},
-				},
+				action : populatedAssignedAction,
 			});
 		} catch (err) {
 			console.error(`Request assignation : \n${err}\n`);
@@ -73,9 +66,9 @@ export default {
 	},
 	async getAction (req : Request, res : Response) {
 		try {
-			const assignedActionstoCheck = await AssignedActionModel.find({state : stateAction.tovalidate, target : res.locals.user._id}).select({angel : 0}).populate('action').lean();
-			const assignedActionValidate = await AssignedActionModel.find({state : stateAction.completed, target : res.locals.user._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
-			const assignedAction = await AssignedActionModel.findOne({angel : res.locals.user._id, state : stateAction.pending}).populate('action target', 'login').lean();
+			const assignedActionstoCheck = await AssignedActionModel.find({state : stateAction.tovalidate, target : res.locals.decoded._id}).select({angel : 0}).populate('action').lean();
+			const assignedActionValidate = await AssignedActionModel.find({state : stateAction.completed, target : res.locals.decoded._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
+			const assignedAction = await AssignedActionModel.findOne({angel : res.locals.decoded._id, state : stateAction.pending}).populate('action target', 'login').lean();
 			return res.status(200).json({
 				succes : true,
 				actions : {
