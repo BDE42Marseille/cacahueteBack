@@ -50,7 +50,7 @@ export default {
 					error: "Missing login or password",
 				});
 			}
-			const existingUser = await UserModel.findOne({ login }).lean();
+			const existingUser = await UserModel.findOne({ login : login.trim() }).lean();
 			if (existingUser) {
 				return res.status(409).json({
 					succes: false,
@@ -58,7 +58,7 @@ export default {
 				});
 			}
 			const hashedPassword = await bcrypt.hash(password, 10);
-			const newUser = new UserModel({ login, password: hashedPassword });
+			const newUser = new UserModel({ login: login.trim(), password: hashedPassword });
 			await newUser.save();
 			return res.status(201).json({
 				succes: true,
