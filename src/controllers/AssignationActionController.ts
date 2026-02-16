@@ -8,21 +8,21 @@ export default {
 		try {
 			const difficulty = req.body.difficulty;
 			const config = await ConfigModel.findOne().lean();
-			if (res.locals.user.isActive) {
+			if (res.locals.decoded.isActive) {
 				return res.status(401).json({
 					succes : false,
 					error : "Vous avez déjà une action en cours",
 				});
 			}
-			if (res.locals.user.daily.numberActions >= config?.maxActionPerDay) {
+			if (res.locals.decoded.daily.numberActions >= config?.maxActionPerDay) {
 				return res.status(401).json({
 					succes : false,
 					error : "Vous avez atteint votre limite d'actions quotidiennes",
 				});
 			}
-			if (res.locals.user.tig.active) {
-				if (res.locals.user.tig.time && new Date(res.locals.user.tig.time).getTime() + config!.tigTime * 60 * 60 * 1000 < Date.now()) {
-					await UserModel.findByIdAndUpdate(res.locals.user._id, {
+			if (res.locals.decoded.tig.active) {
+				if (res.locals.decoded.tig.time && new Date(res.locals.decoded.tig.time).getTime() + config!.tigTime * 60 * 60 * 1000 < Date.now()) {
+					await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
 						tig : {
 							active : false,
 							time : null,
@@ -37,14 +37,14 @@ export default {
 			}
 			const allActions = await ActionModel.find({ difficulty: difficulty }).lean();
 			const randomAction = allActions[Math.floor(Math.random() * allActions.length)];
-			const users = await UserModel.find({ _id : { $ne : res.locals.user._id }, admin : false }).lean();
+			const users = await UserModel.find({ _id : { $ne : res.locals.decoded._id }, admin : false }).lean();
 			const randomUser = users[Math.floor(Math.random() * users.length)];
 			const assignedAction = await AssignedActionModel.create({
 				action : randomAction._id,
-				angel : res.locals.user._id,
+				angel : res.locals.decoded._id,
 				target : randomUser._id,
 			});
-			await UserModel.findByIdAndUpdate(res.locals.user._id, {
+			await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
 				isActive : true,
 				$inc : {
 					"daily.numberActions" : 1,
@@ -87,7 +87,7 @@ export default {
 	},
 	async getAllActiontoCheck (req : Request, res : Response) {
 		try {
-			const assignedActionstoCheck = await AssignedActionModel.find({state : stateAction.tovalidate, target : res.locals.user._id}).select({angel : 0}).populate('action').lean();
+			const assignedActionstoCheck = await AssignedActionModel.find({state : stateAction.tovalidate, target : res.locals.decoded._id}).select({angel : 0}).populate('action').lean();
 			return res.status(200).json({
 				succes : true,
 				actions : assignedActionstoCheck,
@@ -102,7 +102,7 @@ export default {
 	},
 	async getAllActionValidate (req : Request, res : Response) {
 		try {
-			const assignedActionValidate = await AssignedActionModel.find({state : stateAction.completed, target : res.locals.user._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
+			const assignedActionValidate = await AssignedActionModel.find({state : stateAction.completed, target : res.locals.decoded._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
 			return res.status(200).json({
 				succes : true,
 				actions : assignedActionValidate,
@@ -117,7 +117,7 @@ export default {
 	},
 	async getCurrentAction(req : Request, res : Response) {
 		try {
-			const assignedAction = await AssignedActionModel.findOne({angel : res.locals.user._id, state : stateAction.pending}).populate('action target', 'login').lean();
+			const assignedAction = await AssignedActionModel.findOne({angel : res.locals.decoded._id, state : stateAction.pending}).populate('action target', 'login').lean();
 			if (!assignedAction) {
 				return res.status(404).json({
 					succes : false,
@@ -146,7 +146,7 @@ export default {
 					error : "Assigned action not found",
 				});
 			}
-			if (assignedAction.angel.toString() !== res.locals.user._id.toString()) {
+			if (assignedAction.angel.toString() !== res.locals.decoded._id.toString()) {
 				return res.status(401).json({
 					succes : false,
 					error : "You are not the angel of this action",
@@ -159,7 +159,7 @@ export default {
 				});
 			}
 			await AssignedActionModel.findByIdAndUpdate(id, {state : stateAction.tovalidate});
-			await UserModel.findByIdAndUpdate(res.locals.user._id, {
+			await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
 				isActive : false,
 			});
 			return res.status(200).json({
@@ -184,7 +184,7 @@ export default {
 					error : "Assigned action not found",
 				});
 			}
-			if (assignedAction.target.toString() !== res.locals.user._id.toString()) {
+			if (assignedAction.target.toString() !== res.locals.decoded._id.toString()) {
 				return res.status(401).json({
 					succes : false,
 					error : "You are not the target of this action",
@@ -226,7 +226,7 @@ export default {
 					error : "Assigned action not found",
 				});
 			}
-			if (assignedAction.angel.toString() !== res.locals.user._id.toString()) {
+			if (assignedAction.angel.toString() !== res.locals.decoded._id.toString()) {
 				return res.status(401).json({
 					succes : false,
 					error : "You are not the angel of this action",
@@ -268,7 +268,7 @@ export default {
 					error : "Assigned action not found",
 				});
 			}
-			if (assignedAction.target.toString() !== res.locals.user._id.toString()) {
+			if (assignedAction.target.toString() !== res.locals.decoded._id.toString()) {
 				return res.status(401).json({
 					succes : false,
 					error : "You are not the target of this action",
@@ -281,7 +281,7 @@ export default {
 				});
 			}
 			const config = await ConfigModel.findOne().lean();
-			if (res.locals.user.daily.numberTryDemask >= config?.maxTryDemaskPerDay) {
+			if (res.locals.decoded.daily.numberTryDemask >= config?.maxTryDemaskPerDay) {
 				return res.status(401).json({
 					succes : false,
 					error : "Vous avez atteint votre limite de tentative de démasquage quotidienne",
@@ -295,7 +295,7 @@ export default {
 			}
 			if (demask === assignedAction.angel.login) {
 				await AssignedActionModel.findByIdAndUpdate(id, {isUnmasked : true});
-				await UserModel.findByIdAndUpdate(res.locals.user._id, {
+				await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
 					$inc : {
 						"score.revealPoint" : 1,
 						"score.totalScore" : 1,
@@ -312,7 +312,7 @@ export default {
 					message : "Démasquage réussi, l'ange a été révélé !",
 				});
 			} else {
-				await UserModel.findByIdAndUpdate(res.locals.user._id, {
+				await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
 					$inc : {
 						"daily.numberTryDemask" : 1,
 					},

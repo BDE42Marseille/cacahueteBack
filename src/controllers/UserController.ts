@@ -5,7 +5,7 @@ import type { IUser } from "../types/models/IUser.js";
 export default {
 	getAllUsersNames: async (req: Request, res: Response) => {
 		try {
-			const users = await UserModel.find({ _id: { $ne: res.locals.user._id } }).select({ login: 1, _id: 0 }).lean();
+			const users = await UserModel.find({ _id: { $ne: res.locals.decoded._id } }).select({ login: 1, _id: 0 }).lean();
 			return res.status(200).json({
 				succes: true,
 				users: users.map((user: IUser) => user.login),
