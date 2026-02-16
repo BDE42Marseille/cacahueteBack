@@ -3,6 +3,7 @@ import https from 'https';
 import express from "express";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
+import cron from 'node-cron';
 import cors from 'cors';
 import fs from 'fs';
 
@@ -10,6 +11,7 @@ dotenv.config();
 
 import router from './routes/index.js';
 import { connectDb } from './services/MongooseService.js';
+import { resetPlayer } from './services/cron/resetUser.js';
 
 
 let httpsOptions: https.ServerOptions | null = null;
@@ -57,4 +59,7 @@ if (!process.env.PATH_KEY_HTTPS || !process.env.PATH_CERF_HTTPS) {
 
     await connectDb(process.env.MONGODB_USERNAME, process.env.MONGODB_PASSWORD, process.env.MONGODB_URL);
 
+	cron.schedule('42 23 * * 0', async () => {
+        await resetPlayer();
+    });
 })();
