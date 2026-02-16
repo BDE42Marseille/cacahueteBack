@@ -62,7 +62,7 @@ export default {
 			await newUser.save();
 			return res.status(201).json({
 				succes: true,
-				message: "User registered succesfully",
+				message: "User registered successfully",
 			});
 		} catch (error) {
 			console.error(`Register : \n${error}\n`);
@@ -72,4 +72,18 @@ export default {
 			});
 		}
 	},
+	me: (req: Request, res: Response) => {
+		try {
+			return res.status(200).json({
+				succes: true,
+				user: res.locals.decoded,
+			});
+		} catch (error) {
+			console.error(`CheckAuth : \n${error}\n`);
+			return res.status(500).json({
+				succes: false,
+				error: "Internal server error",
+			});
+		}
+	}
 }

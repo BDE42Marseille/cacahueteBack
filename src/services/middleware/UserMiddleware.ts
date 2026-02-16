@@ -40,7 +40,11 @@ export const bearerTokenHandler = async(req: Request, res: Response, next: Funct
                             .findById(decoded._id)
                             .select({password: 0})
                             .lean();
-        
+        if (!user)
+            return res.status(401).json({
+                succes : false,
+                error : "User not found",
+            });
         res.locals.decoded = user;
         return next();
     } catch (err) {
@@ -50,7 +54,7 @@ export const bearerTokenHandler = async(req: Request, res: Response, next: Funct
                 error : "Token expired",
             });
         if ((err as Error).message == "invalid signature")
-            res.status(401).json({
+            return res.status(401).json({
                 succes : false,
                 error : "Invalid token",
             });
