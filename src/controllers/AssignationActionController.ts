@@ -35,7 +35,7 @@ export default {
 					});
 				}
 			}
-			const allActions = await ActionModel.find({ difficulty: difficulty }).lean();
+			const allActions = await ActionModel.find({ type: difficulty }).lean();
 			const randomAction = allActions[Math.floor(Math.random() * allActions.length)];
 			const users = await UserModel.find({ _id : { $ne : res.locals.decoded._id }, admin : false }).lean();
 			const randomUser = users[Math.floor(Math.random() * users.length)];
@@ -68,7 +68,23 @@ export default {
 		try {
 			const assignedActionstoCheck = await AssignedActionModel.find({state : stateAction.tovalidate, target : res.locals.decoded._id}).select({angel : 0}).populate('action').lean();
 			const assignedActionValidate = await AssignedActionModel.find({state : stateAction.completed, target : res.locals.decoded._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
-			const assignedAction = await AssignedActionModel.findOne({angel : res.locals.decoded._id, state : stateAction.pending}).populate('action target', 'login').lean();
+			// je veux populate TOUT les champs de assignedAction et je voudrais que le champ angel soit juste le login de l'angel et le champ target soit juste le login du target par contre je veux garder tous les champs de action
+			// condition du find, un et avec le state pending et l'angel qui correspond à l'id de l'utilisateur connecté
+			const assignedAction = await AssignedActionModel.findOne({$and: [{angel : res.locals.decoded._id}, {status : stateAction.pending}]})
+			.populate({
+				path: 'action',
+				// Populate tous les champs de 'action'
+			})
+			.populate({
+				path: 'angel',
+				select: 'login', // Ne sélectionne que le champ 'login' pour 'angel'
+			})
+			.populate({
+				path: 'target',
+				select: 'login', // Ne sélectionne que le champ 'login' pour 'target'
+			}).lean();
+
+			console.log(assignedAction);
 			return res.status(200).json({
 				succes : true,
 				actions : {
