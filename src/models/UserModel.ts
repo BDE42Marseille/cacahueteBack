@@ -33,7 +33,7 @@ const UserSchema = new Schema<IUser>({
 			type : Number,
 			default : 0,
 		},
-		numberTryDemask : {
+		numberTryDemasked : {
 			type : Number,
 			default : 0,
 		},

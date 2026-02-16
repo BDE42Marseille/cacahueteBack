@@ -9,13 +9,13 @@ export default {
 			const difficulty = req.body.difficulty;
 			const config = await ConfigModel.findOne().lean();
 			if (res.locals.decoded.isActive) {
-				return res.status(401).json({
+				return res.status(200).json({
 					succes : false,
 					error : "Vous avez déjà une action en cours",
 				});
 			}
 			if (res.locals.decoded.daily.numberActions >= config?.maxActionPerDay) {
-				return res.status(401).json({
+				return res.status(200).json({
 					succes : false,
 					error : "Vous avez atteint votre limite d'actions quotidiennes",
 				});
@@ -29,9 +29,9 @@ export default {
 						},
 					});
 				} else {
-					return res.status(401).json({
+					return res.status(200).json({
 						succes : false,
-						error : "Vous êtes actuellement en TIG, vous ne pouvez pas faire d'action",
+						error : "Vous êtes actuellement pénalisé car vous avez abandonné votre ancienne action, merci de patienter 1 heure.",
 					});
 				}
 			}
@@ -51,7 +51,18 @@ export default {
 				},
 			});
 			await assignedAction.save();
-			const populatedAssignedAction = await AssignedActionModel.findById(assignedAction._id).populate('action target', 'login').lean();
+			const populatedAssignedAction = await AssignedActionModel.findById(assignedAction._id)
+			.populate({
+				path: 'action',
+			})
+			.populate({
+				path: 'angel',
+				select: 'login',
+			})
+			.populate({
+				path: 'target',
+				select: 'login',
+			}).lean();
 			return res.status(200).json({
 				succes : true,
 				action : populatedAssignedAction,
@@ -66,8 +77,8 @@ export default {
 	},
 	async getAction (req : Request, res : Response) {
 		try {
-			const assignedActionstoCheck = await AssignedActionModel.find({state : stateAction.tovalidate, target : res.locals.decoded._id}).select({angel : 0}).populate('action').lean();
-			const assignedActionValidate = await AssignedActionModel.find({state : stateAction.completed, target : res.locals.decoded._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
+			const assignedActionstoCheck = await AssignedActionModel.find({status : stateAction.tovalidate, target : res.locals.decoded._id}).select({angel : 0}).populate('action').lean();
+			const assignedActionValidate = await AssignedActionModel.find({status : stateAction.completed, target : res.locals.decoded._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
 			const assignedAction = await AssignedActionModel.findOne({$and: [{angel : res.locals.decoded._id}, {status : stateAction.pending}]})
 			.populate({
 				path: 'action',
@@ -98,7 +109,7 @@ export default {
 	},
 	async getAllActiontoCheck (req : Request, res : Response) {
 		try {
-			const assignedActionstoCheck = await AssignedActionModel.find({state : stateAction.tovalidate, target : res.locals.decoded._id}).select({angel : 0}).populate('action').lean();
+			const assignedActionstoCheck = await AssignedActionModel.find({status : stateAction.tovalidate, target : res.locals.decoded._id}).select({angel : 0}).populate('action').lean();
 			return res.status(200).json({
 				succes : true,
 				actions : assignedActionstoCheck,
@@ -113,7 +124,7 @@ export default {
 	},
 	async getAllActionValidate (req : Request, res : Response) {
 		try {
-			const assignedActionValidate = await AssignedActionModel.find({state : stateAction.completed, target : res.locals.decoded._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
+			const assignedActionValidate = await AssignedActionModel.find({status : stateAction.completed, target : res.locals.decoded._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
 			return res.status(200).json({
 				succes : true,
 				actions : assignedActionValidate,
@@ -128,7 +139,18 @@ export default {
 	},
 	async getCurrentAction(req : Request, res : Response) {
 		try {
-			const assignedAction = await AssignedActionModel.findOne({angel : res.locals.decoded._id, state : stateAction.pending}).populate('action target', 'login').lean();
+			const assignedAction = await AssignedActionModel.findOne({angel : res.locals.decoded._id, status : stateAction.pending})
+			.populate({
+				path: 'action',
+			})
+			.populate({
+				path: 'angel',
+				select: 'login',
+			})
+			.populate({
+				path: 'target',
+				select: 'login',
+			}).lean();
 			if (!assignedAction) {
 				return res.status(404).json({
 					succes : false,
@@ -163,19 +185,19 @@ export default {
 					error : "You are not the angel of this action",
 				});
 			}
-			if (assignedAction.state !== stateAction.pending) {
+			if (assignedAction.status !== stateAction.pending) {
 				return res.status(400).json({
 					succes : false,
 					error : "This action is not pending",
 				});
 			}
-			await AssignedActionModel.findByIdAndUpdate(id, {state : stateAction.tovalidate});
+			await AssignedActionModel.findByIdAndUpdate(id, {status : stateAction.tovalidate});
 			await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
 				isActive : false,
 			});
 			return res.status(200).json({
 				succes : true,
-				message : "Action validated, waiting for target validation",
+				message : "Action validée, en attente de validation par la cible !",
 			});
 		} catch (err) {
 			console.error(`Validate action angel : \n${err}\n`);
@@ -201,20 +223,18 @@ export default {
 					error : "You are not the target of this action",
 				});
 			}
-			if (assignedAction.state !== stateAction.tovalidate) {
+			if (assignedAction.status !== stateAction.tovalidate) {
 				return res.status(400).json({
 					succes : false,
 					error : "This action is not waiting for validation",
 				});
 			}
-			await AssignedActionModel.findByIdAndUpdate(id, {state : stateAction.completed});
+			await AssignedActionModel.findByIdAndUpdate(id, {status : stateAction.completed});
 			const config = await ConfigModel.findOne().lean();
-			await UserModel.findByIdAndUpdate(assignedAction.angel, {
-				$inc : {
-					"score.goodPoint" : assignedAction.action.type === difficulty.easy ? config.easyActionPoint : config.hardActionPoint,
-					"score.totalScore" : assignedAction.action.type === difficulty.easy ? config.easyActionPoint : config.hardActionPoint,
-				},
-			});
+			const angel = await UserModel.findById(assignedAction.angel);
+			angel.score.goodPoint += assignedAction.action.type === difficulty.easy ? config.easyActionPoint : config.hardActionPoint;
+			angel.score.totalScore += assignedAction.action.type === difficulty.easy ? config.easyActionPoint : config.hardActionPoint;
+			await angel.save();
 			return res.status(200).json({
 				succes : true,
 				message : "Action validated, good job !",
@@ -243,18 +263,19 @@ export default {
 					error : "You are not the angel of this action",
 				});
 			}
-			if (assignedAction.state !== stateAction.pending) {
+			if (assignedAction.status !== stateAction.pending) {
 				return res.status(400).json({
 					succes : false,
 					error : "This action is not pending",
 				});
 			}
-			await AssignedActionModel.findByIdAndUpdate(id, {state : stateAction.abandoned});
+			await AssignedActionModel.findByIdAndUpdate(id, {status : stateAction.abandoned});
 			await UserModel.findByIdAndUpdate(assignedAction.angel, {
 				tig : {
 					active : true,
 					time : new Date(),
 				},
+				isActive : false,
 			});
 			return res.status(200).json({
 				succes : true,
@@ -285,7 +306,7 @@ export default {
 					error : "You are not the target of this action",
 				});
 			}
-			if (assignedAction.state !== stateAction.completed) {
+			if (assignedAction.status !== stateAction.completed) {
 				return res.status(400).json({
 					succes : false,
 					error : "This action is not completed",
@@ -306,18 +327,15 @@ export default {
 			}
 			if (demask.trim() === assignedAction.angel.login) {
 				await AssignedActionModel.findByIdAndUpdate(id, {isUnmasked : true});
-				await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
-					$inc : {
-						"score.revealPoint" : 1,
-						"score.totalScore" : 1,
-						"daily.numberTryDemask" : 1,
-					},
-				});
-				await UserModel.findByIdAndUpdate(assignedAction.angel._id, {
-					$inc : {
-						"score.revealedPoint" : 1,
-					},
-				});
+				const user =await UserModel.findById(res.locals.decoded._id);
+				user.score.revealPoint += 1;
+				user.score.totalScore += 1;
+				user.daily.numberTryDemasked += 1;
+				await user.save();
+				const angel = await UserModel.findById(assignedAction.angel._id);
+				angel.score.revealedPoint += 1;
+				angel.score.totalScore -= 1;
+				await angel.save();
 				return res.status(200).json({
 					succes : true,
 					message : "Démasquage réussi, l'ange a été révélé !",
@@ -325,7 +343,7 @@ export default {
 			} else {
 				await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
 					$inc : {
-						"daily.numberTryDemask" : 1,
+						"daily.numberTryDemasked" : 1,
 					},
 				});
 				return res.status(200).json({
