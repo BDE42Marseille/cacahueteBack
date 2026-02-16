@@ -23,6 +23,10 @@ const UserSchema = new Schema<IUser>({
 			type : Number,
 			default : 0,
 		},
+		totalScore : {
+			type : Number,
+			default : 0,
+		},
 	},
 	daily : {
 		numberActions : {
