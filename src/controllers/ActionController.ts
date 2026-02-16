@@ -20,7 +20,7 @@ export default {
 	async create(req: Request, res: Response) {
 		try {
 			const { type, name, description } = req.body;
-			if (!type || !name || !description) {
+			if ((type != 0 && type != 1) || !name || !description) {
 				return res.status(400).json({
 					succes: false,
 					error: "Missing type, name or description",
@@ -67,7 +67,7 @@ export default {
 		try {
 			const { id } = req.params;
 			const { type, name, description } = req.body;
-			if (!id || !type || !name || !description) {
+			if (!id || (type != 0 && type != 1) || !name || !description) {
 				return res.status(400).json({
 					succes: false,
 					error: "Missing id, type, name or description",
