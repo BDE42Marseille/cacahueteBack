@@ -304,7 +304,7 @@ export default {
 					error : "This action is already unmasked",
 				});
 			}
-			if (demask === assignedAction.angel.login) {
+			if (demask.trim() === assignedAction.angel.login) {
 				await AssignedActionModel.findByIdAndUpdate(id, {isUnmasked : true});
 				await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
 					$inc : {
