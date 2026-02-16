@@ -83,8 +83,6 @@ export default {
 				path: 'target',
 				select: 'login', // Ne sélectionne que le champ 'login' pour 'target'
 			}).lean();
-
-			console.log(assignedAction);
 			return res.status(200).json({
 				succes : true,
 				actions : {
