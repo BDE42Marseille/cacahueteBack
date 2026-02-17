@@ -20,7 +20,7 @@ export default {
 	},
 	topUsers: async (req: Request, res: Response) => {
 		try {
-			const users = await UserModel.find().select({ login: 1, "score.totalScore": 1}).sort({ "score.totalScore": -1 }).limit(10).lean();
+			const users = await UserModel.find({admin: false}).select({ login: 1, "score.totalScore": 1}).sort({ "score.totalScore": -1 }).limit(10).lean();
 			return res.status(200).json({
 				succes: true,
 				users,

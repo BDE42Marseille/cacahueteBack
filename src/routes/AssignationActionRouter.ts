@@ -12,7 +12,7 @@ AssignationActionRouter.get('/actually', bearerTokenHandler, AssignationActionCo
 AssignationActionRouter.post('/validate-angel/:id', bearerTokenHandler, AssignationActionController.validateActionAngel);
 AssignationActionRouter.post('/validate-target/:id', bearerTokenHandler, AssignationActionController.validateActionTarget);
 AssignationActionRouter.post('/abandon/:id', bearerTokenHandler, AssignationActionController.abandonAction);
-AssignationActionRouter.post('/demask/:id', bearerTokenHandler, AssignationActionController.tryDemask);
+// AssignationActionRouter.post('/demask/:id', bearerTokenHandler, AssignationActionController.tryDemask);
 AssignationActionRouter.get('/admin', bearerTokenHandler, adminHandler, AssignationActionController.getAdminAssignedActions);
 
 export default AssignationActionRouter;
