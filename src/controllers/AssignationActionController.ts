@@ -31,7 +31,7 @@ export default {
 				} else {
 					return res.status(200).json({
 						succes : false,
-						error : "Vous êtes actuellement pénalisé car vous avez abandonné votre ancienne action, merci de patienter 1 heure.",
+						error : `Vous êtes actuellement pénalisé car vous avez abandonné votre ancienne action, merci de patienter ${config!.tigTime} heure(s).`,
 					});
 				}
 			}
@@ -77,8 +77,18 @@ export default {
 	},
 	async getAction (req : Request, res : Response) {
 		try {
-			const assignedActionstoCheck = await AssignedActionModel.find({status : stateAction.tovalidate, target : res.locals.decoded._id}).select({angel : 0}).populate('action').lean();
-			const assignedActionValidate = await AssignedActionModel.find({status : stateAction.completed, target : res.locals.decoded._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
+			const assignedActionstoCheck = await AssignedActionModel.find({status : stateAction.tovalidate, target : res.locals.decoded._id}).populate('action')
+			.populate({
+				path: 'angel',
+				select: 'login',
+			})
+			.lean();
+			const assignedActionValidate = await AssignedActionModel.find({status : stateAction.completed, target : res.locals.decoded._id}).populate('action')
+			.populate({
+				path: 'angel',
+				select: 'login',
+			})
+			.lean();
 			const assignedAction = await AssignedActionModel.findOne({$and: [{angel : res.locals.decoded._id}, {status : stateAction.pending}]})
 			.populate({
 				path: 'action',
@@ -109,7 +119,10 @@ export default {
 	},
 	async getAllActiontoCheck (req : Request, res : Response) {
 		try {
-			const assignedActionstoCheck = await AssignedActionModel.find({status : stateAction.tovalidate, target : res.locals.decoded._id}).select({angel : 0}).populate('action').lean();
+			const assignedActionstoCheck = await AssignedActionModel.find({status : stateAction.tovalidate, target : res.locals.decoded._id}).populate('action').populate({
+				path: 'angel',
+				select: 'login',
+			}).lean();
 			return res.status(200).json({
 				succes : true,
 				actions : assignedActionstoCheck,
@@ -124,7 +137,15 @@ export default {
 	},
 	async getAllActionValidate (req : Request, res : Response) {
 		try {
-			const assignedActionValidate = await AssignedActionModel.find({status : stateAction.completed, target : res.locals.decoded._id, isUnmasked : false}).select({angel : 0}).populate('action').lean();
+			const assignedActionValidate = await AssignedActionModel.find({status : stateAction.completed, target : res.locals.decoded._id})
+			.populate({
+				path: 'action',
+			})
+			.populate({
+				path: 'angel',
+				select: 'login',
+			})
+			.lean();
 			return res.status(200).json({
 				succes : true,
 				actions : assignedActionValidate,
@@ -232,9 +253,15 @@ export default {
 			await AssignedActionModel.findByIdAndUpdate(id, {status : stateAction.completed});
 			const config = await ConfigModel.findOne().lean();
 			const angel = await UserModel.findById(assignedAction.angel);
+			const target = await UserModel.findById(assignedAction.target);
 			angel.score.goodPoint += assignedAction.action.type === difficulty.easy ? config.easyActionPoint : config.hardActionPoint;
 			angel.score.totalScore += assignedAction.action.type === difficulty.easy ? config.easyActionPoint : config.hardActionPoint;
+			if (assignedAction.action.type === difficulty.hard) {
+				target.score.revealPoint += 1;
+				target.score.totalScore += 1;
+			}
 			await angel.save();
+			await target.save();
 			return res.status(200).json({
 				succes : true,
 				message : "Action validated, good job !",
@@ -279,7 +306,7 @@ export default {
 			});
 			return res.status(200).json({
 				succes : true,
-				message : "Action abandoned, you are now in TIG",
+				message : `Action abandonnée, vous êtes maintenant pénalisé pour avoir abandonné votre action !`,
 			});
 		} catch (err) {
 			console.error(`Abandon action : \n${err}\n`);
