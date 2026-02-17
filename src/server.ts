@@ -59,7 +59,7 @@ if (!process.env.PATH_KEY_HTTPS || !process.env.PATH_CERF_HTTPS) {
 
     await connectDb(process.env.MONGODB_USERNAME, process.env.MONGODB_PASSWORD, process.env.MONGODB_URL);
 
-	cron.schedule('42 23 * * 0', async () => {
+	cron.schedule('42 23 * * *', async () => {
         await resetPlayer();
     });
 })();
