@@ -33,4 +33,23 @@ export default {
 			});
 		}
 	},
+	recalcuulateScore: async (req: Request, res: Response) => {
+		try {
+			const users = await UserModel.find().lean();
+			for (const user of users) {
+				user.score.totalScore = user.score.goodPoint + user.score.revealPoint;
+				await UserModel.findByIdAndUpdate(user._id, user);
+			}
+			return res.status(200).json({
+				succes: true,
+				message: "Scores recalculated",
+			});
+		} catch (error) {
+			console.error(`Recalculate scores : \n${error}\n`);
+			return res.status(500).json({
+				succes: false,
+				error: "Internal server error",
+			});
+		}
+	},
 }

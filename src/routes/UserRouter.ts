@@ -6,5 +6,6 @@ const UserRouter = express.Router();
 
 UserRouter.get('/', bearerTokenHandler, UserController.getAllUsersNames);
 UserRouter.get('/top', bearerTokenHandler, UserController.topUsers);
+UserRouter.post('/recalculate-score', bearerTokenHandler, adminHandler, UserController.recalcuulateScore);
 
 export default UserRouter;
