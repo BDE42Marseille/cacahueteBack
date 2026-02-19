@@ -20,21 +20,21 @@ export default {
 					error : "Vous avez atteint votre limite d'actions quotidiennes",
 				});
 			}
-			if (res.locals.decoded.tig.active) {
-				if (res.locals.decoded.tig.time && new Date(res.locals.decoded.tig.time).getTime() + config!.tigTime * 60 * 60 * 1000 < Date.now()) {
-					await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
-						tig : {
-							active : false,
-							time : null,
-						},
-					});
-				} else {
-					return res.status(200).json({
-						succes : false,
-						error : `Vous êtes actuellement pénalisé car vous avez abandonné votre ancienne action, merci de patienter ${config!.tigTime} heure(s).`,
-					});
-				}
-			}
+			// if (res.locals.decoded.tig.active) {
+			// 	if (res.locals.decoded.tig.time && new Date(res.locals.decoded.tig.time).getTime() + config!.tigTime * 60 * 60 * 1000 < Date.now()) {
+			// 		await UserModel.findByIdAndUpdate(res.locals.decoded._id, {
+			// 			tig : {
+			// 				active : false,
+			// 				time : null,
+			// 			},
+			// 		});
+			// 	} else {
+			// 		return res.status(200).json({
+			// 			succes : false,
+			// 			error : `Vous êtes actuellement pénalisé car vous avez abandonné votre ancienne action, merci de patienter ${config!.tigTime} heure(s).`,
+			// 		});
+			// 	}
+			// }
 			const allActions = await ActionModel.find({ type: difficulty }).lean();
 			const randomAction = allActions[Math.floor(Math.random() * allActions.length)];
 			const users = await UserModel.find({ _id : { $ne : res.locals.decoded._id }, admin : false }).lean();
@@ -298,15 +298,11 @@ export default {
 			}
 			await AssignedActionModel.findByIdAndUpdate(id, {status : stateAction.abandoned});
 			await UserModel.findByIdAndUpdate(assignedAction.angel, {
-				tig : {
-					active : true,
-					time : new Date(),
-				},
 				isActive : false,
 			});
 			return res.status(200).json({
 				succes : true,
-				message : `Action abandonnée, vous êtes maintenant pénalisé pour avoir abandonné votre action !`,
+				message : `Action abandonnée`,
 			});
 		} catch (err) {
 			console.error(`Abandon action : \n${err}\n`);
